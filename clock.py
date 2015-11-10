@@ -10,7 +10,7 @@ def jump(distanz, winkel=0):
     forward(distanz)
     left(winkel)
     pendown()
-
+#改了一点
 def hand(laenge, spitze):
     fd(laenge*1.15)
     rt(90)
