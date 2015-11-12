@@ -73,7 +73,10 @@ def rotate(point=[],angle=0):
     return point
 
 def opsist(point=[],axis="x"):
-    opMat = array([[1,0,0],[0,-1,0],[0,0,1]])
+    if axis=="y":
+        opMat = array([[-1,0,0],[0,1,0],[0,0,1]])
+    else:
+        opMat = array([[1,0,0],[0,-1,0],[0,0,1]])
     for i in range(len(point)):
         point[i] = dot(array(point[i]),opMat)
 
