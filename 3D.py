@@ -1,4 +1,4 @@
-#-*- coding:utf-8 -*-
+﻿#-*- coding:utf-8 -*-
 __author__ = '孔轩志'
 
 
@@ -7,7 +7,7 @@ from numpy import *
 from math import  *
 from copy import *
 
-len = 30
+len = 80
 
 
 def  hua(start1):
@@ -57,7 +57,7 @@ hua(start)
 
 for i in range(1,30):
     reset()
-    start = rotate(start,0.3*i,"x")
+    start = rotate(start,0.3*i,"y")
     hua(start)
 
 input()

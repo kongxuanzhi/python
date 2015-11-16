@@ -62,14 +62,12 @@ def rect(point=[]):
 
 def goline(point=[],dx=0,dy=0):
     goMat = array([[1,0,0],[0,1,0],[dx,dy,1]])
-    for i in range(len(point)):
-        point[i] = dot(array(point[i]), goMat)
+    point = dot(array(point), goMat)
     return point
 
 def rotate(point=[],angle=0):
     roMat = array([[cos(angle),sin(angle),0],[-sin(angle),cos(angle),0],[0,0,1]])
-    for i in range(len(point)):
-        point[i] = dot(array(point[i]), roMat)
+    point = dot(array(point), roMat)
     return point
 
 def opsist(point=[],axis="x"):
@@ -77,15 +75,12 @@ def opsist(point=[],axis="x"):
         opMat = array([[-1,0,0],[0,1,0],[0,0,1]])
     else:
         opMat = array([[1,0,0],[0,-1,0],[0,0,1]])
-    for i in range(len(point)):
-        point[i] = dot(array(point[i]),opMat)
-
+    point = dot(array(point),opMat)
     return point
 
 def big(point=[],dx=0,dy=0):
     bMat=[[dx,0,0],[0,dy,0],[0,0,1]]
-    for i in range(len(point)):
-        point[i] = dot(array(point[i]),bMat)
+    point = dot(array(point),bMat)
     return point
 
 
