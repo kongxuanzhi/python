@@ -1,124 +1,99 @@
-# -*- coding:utf-8 -*-
-__author__ = '孔轩志'
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
-from turtle import *
-from datetime import datetime
+import sys
+from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame,QLabel,
+                             QHBoxLayout, QPushButton, QApplication, QLCDNumber
+                             , QDesktopWidget)
+# from PyQt5.QtGui import QPainter, QFont, QColor, QPen
+from PyQt5.QtCore import Qt, QBasicTimer
+from Utils import center
 
-def jump(distanz, winkel=0):
-    penup()
-    right(winkel)
-    forward(distanz)
-    left(winkel)
-    pendown()
-def hand(laenge, spitze):
-    fd(laenge*1.15)
-    rt(90)
-    fd(spitze/2.0)
-    lt(120)
-    fd(spitze)
-    lt(120)
-    fd(spitze)
-    lt(120)
-    fd(spitze/2.0)
+class Dash(QWidget):
+    def __init__(self, time, parent_board):
+        super().__init__()
+        self.setFixedHeight(60)
+        self.setFixedWidth(100)
+        self.lcd = QLCDNumber(self)
+        self.timer = QBasicTimer()
+        self.time = time
+        self.parentBoard = parent_board
+        self.init()
 
-def make_hand_shape(name, laenge, spitze):
-    reset()
-    jump(-laenge*0.15)
-    begin_poly()
-    hand(laenge, spitze)
-    end_poly()
-    hand_form = get_poly()
-    register_shape(name, hand_form)
+    def init(self):
+        main_layout = QHBoxLayout(self)
+        main_layout.addWidget(self.lcd, Qt.AlignCenter)
+        self.timer.start(1000, self)
 
-def clockface(radius):
-    reset()
-    pensize(7)
-    for i in range(60):
-        jump(radius)
-        if i % 5 == 0:
-            fd(25)
-            jump(-radius-25)
-        else:
-            dot(3)
-            jump(-radius)
-        rt(6)
+        self.move(2000, 2000)
+        self.setStyleSheet("QWidget { background-color: #3c3f41 }")
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.show()
 
-def setup():
-    global second_hand, minute_hand, hour_hand, writer
-    mode("logo")
-    make_hand_shape("second_hand", 125, 25)
-    make_hand_shape("minute_hand",  130, 25)
-    make_hand_shape("hour_hand", 90, 25)
+    def timerEvent(self, e):
+        if self.time == 0:
+            self.timer.stop()
+            self.hide()
+            self.parentBoard.show()
+            return
 
-    clockface(160)
-    second_hand = Turtle()
-    second_hand.shape("second_hand")
-    second_hand.color("gray20", "gray80")
-    minute_hand = Turtle()
-    minute_hand.shape("minute_hand")
-    minute_hand.color("blue1", "red1")
-    hour_hand = Turtle()
-    hour_hand.shape("hour_hand")
-    hour_hand.color("blue3", "red3")
-    for hand in second_hand, minute_hand, hour_hand:
-        hand.resizemode("user")
-        hand.shapesize(1, 1, 3)
-        hand.speed(0)
-    ht()
-    writer = Turtle()
-    #writer.mode("logo")
-    writer.ht()
-    writer.pu()
-    writer.bk(85)
+        self.time = self.time - 1
+        self.lcd.display(self.time)
 
-def wochentag(t):
-    wochentag = ["Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"]
-    return wochentag[t.weekday()]
+class Sleep(QWidget):
+    def __init__(self):
+        super().__init__()
+        super().setFixedSize(300, 200)
+        self.seconds = [
+            '1', '3', '5',
+            '7', '9', '11',
+            '13', '15', '30'
+        ]
 
-def datum(z):
-    monat = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "June",
-             "July", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."]
-    j = z.year
-    m = monat[z.month - 1]
-    t = z.day
-    return "%s %d %d" % (m, t, j)
+        self.positions = [(i, j) for i in range(3) for j in range(3)]
 
-def tick():
-    t = datetime.today()
-    sekunde = t.second + t.microsecond*0.000001
-    minute = t.minute + sekunde/60.0
-    stunde = t.hour + minute/60.0
-    try:
-        tracer(False)  # Terminator can occur here
-        writer.clear()
-        writer.home()
-        writer.forward(65)
-        writer.write(wochentag(t),
-                     align="center", font=("Courier", 14, "bold"))
-        writer.back(150)
-        writer.write(datum(t),
-                     align="center", font=("Courier", 14, "bold"))
-        writer.forward(85)
-        tracer(True)
-        second_hand.setheading(6*sekunde)  # or here
-        minute_hand.setheading(6*minute)
-        hour_hand.setheading(30*stunde)
-        tracer(True)
-        ontimer(tick, 1000)
-    except Terminator:
-        pass  # turtledemo user pressed STOP
+        self.msg_lbl = QLabel("好好想想你要做什么事！！")
+        self.init()
+        self.subDS = None
 
-def main():
-    tracer(False)
-    setup()
-    tracer(True)
-    tick()
-    return "EVENTLOOP"
+    def init(self):
+        panel_lyt = QGridLayout()
+        vbox_lyt = QVBoxLayout()
+        alert_lyt = QHBoxLayout()
 
-if __name__ == "__main__":
-    mode("logo")
-    msg = main()
-    print(msg)
-    mainloop()
+        for position, second in zip(self.positions, self.seconds):
+            sec_btn = QPushButton(second, self)
+            sec_btn.clicked.connect(self.start)
+            panel_lyt.addWidget(sec_btn, *position)
 
+        self.msg_lbl.setAlignment(Qt.AlignCenter)
+        self.msg_lbl.setStyleSheet('QLabel { background-color : #3c3f41; color: #FFFFFF}')
+        alert_lyt.addWidget(self.msg_lbl)
+
+        vbox_lyt.addLayout(panel_lyt) #上部数字
+        vbox_lyt.addLayout(alert_lyt) #下部提示
+        self.setLayout(vbox_lyt)
+
+        center(self)
+
+        self.setWindowTitle('TIME RUNS FAST!')
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)
+        self.show()
+
+    def start(self):
+        source = self.sender()
+        time = int(source.text()) * 60
+        self.hide()
+        self.subDS = Dash(time, self)
+        self.subDS.show()
+        self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(time))
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    sp = Sleep()
+    sys.exit(app.exec_())
+
+# TODOLIST
+# 1. 有可能的话，将LCD字体居中
+# 2. 记录日志到xls
+# 3. 自定义时间button
