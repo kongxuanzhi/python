@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame,QLabel,
                              QHBoxLayout, QPushButton, QApplication, QLCDNumber
                              , QDesktopWidget)
 from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon
-from PyQt5.QtCore import Qt, QBasicTimer
+from PyQt5.QtCore import Qt, QBasicTimer, QSize
 from Utils import center
 
 # class ImageButton(QPushButton):
@@ -29,7 +29,7 @@ class Dash(QWidget):
         self.setFixedHeight(60)
         self.setFixedWidth(100)
         self.lcd = QLCDNumber(self)
-        self.status_btn = QPushButton(QIcon('stop.png'), '', self)
+        self.status_btn = QPushButton(QIcon('play_fill.png'), '', self)
         # self.status_btn = ImageButton('pause', , 'play_fill.png', self)
         self.timer = QBasicTimer()
         self.time = time
@@ -58,8 +58,7 @@ class Dash(QWidget):
             self.timer.stop()
             self.isPause = True
             self.status_btn.setIcon(QIcon('stop.png'))
-
-        # self.status_btn.setIconSize(QSize(48, 48));
+        # self.status_btn.setIconSize(QSize(24, 24));
 
     def timerEvent(self, e):
         if self.time == 0:
