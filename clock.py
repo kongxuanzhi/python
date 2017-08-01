@@ -5,31 +5,56 @@ import sys
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame,QLabel,
                              QHBoxLayout, QPushButton, QApplication, QLCDNumber
                              , QDesktopWidget)
-from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon
-from PyQt5.QtCore import Qt, QBasicTimer, QSize
+from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon, QImage, QBrush, QCursor
+from PyQt5.QtCore import Qt, QBasicTimer, QSize, QRect, QPoint
 from Utils import center
 
-# class ImageButton(QPushButton):
-#     def __init__(self, icon_down, icon_up, text, parent=None):
-#         super().__init__(self, text, parent)
-#         self.isPress = False
-#         self.icon_down = QIcon(icon_down)
-#         self.icon_up = QIcon(icon_up)
-#     def click(self):
-#         if self.isPress:
-#             self.isPress = False
-#             self.setIcon(*self.icon_up)
-#         else:
-#             self.setIcon(*self.icon_down)
-#             self.isPress = True
+class ImageButton(QPushButton):
+
+    def __init__(self, icon_down, icon_up, text, parent=None):
+        super().__init__(text, parent)
+        self.isPress = False
+        self.f = None
+        self.size = self.frameSize()
+
+        self.icon_down = QImage(icon_down)
+        self.icon_up = QImage(icon_up)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.clicked.connect(self.changeState)
+
+    def setSize(self, size):
+        self.size = size
+        self.setFixedSize(size)
+
+    def paintEvent(self, QPaintEvent):
+        painter = QPainter(self)
+        qrect = QRect(QPoint(0,0), self.size)
+        painter.fillRect(qrect, QBrush(QColor('#3c3f41')))
+        if self.isPress:
+            # painter.drawText(0, 0, '121')
+            painter.drawImage(qrect, self.icon_up)
+        else:
+            # QPainter.drawText(int, int, str)
+            painter.drawImage(qrect, self.icon_down)
+
+    def connect(self, f):
+        self.f = f
+
+    def changeState(self):
+        self.isPress = not self.isPress
+        if self.f:
+            self.f()
 
 class Dash(QWidget):
     def __init__(self, time, parent_board):
         super().__init__()
         self.setFixedSize(100, 60)
         self.lcd = QLCDNumber(self)
-        self.status_btn = QPushButton(QIcon('play_fill.png'), '', self)
+        # self.status_btn = QPushButton(QIcon('play_fill.png'), '', self)
         # self.status_btn = ImageButton('pause', , 'play_fill.png', self)
+        self.status_btn = ImageButton('stop.png', 'play_fill.png', 'test', self)
+        self.status_btn.setSize(QSize(25, 25))
+
         self.timer = QBasicTimer()
         self.time = time
         self.isPause = False
@@ -38,7 +63,10 @@ class Dash(QWidget):
 
     def init(self):
         main_layout = QHBoxLayout(self)
-        self.status_btn.clicked.connect(self.changeStatus)
+        self.status_btn.connect(self.changeStatus)
+
+
+        # self.status_btn.clicked.connect(self.changeStatus)
         main_layout.addWidget(self.status_btn)
         main_layout.addWidget(self.lcd, Qt.AlignCenter)
         self.timer.start(1000, self)
@@ -57,7 +85,7 @@ class Dash(QWidget):
             self.timer.stop()
             self.isPause = True
             self.status_btn.setIcon(QIcon('stop.png'))
-        # self.status_btn.setIconSize(QSize(24, 24));
+            # self.status_btn.setIconSize(QSize(24, 24));
 
     def timerEvent(self, e):
         if self.time == 0:
@@ -66,8 +94,8 @@ class Dash(QWidget):
             self.parentBoard.show()
             return
 
-        self.time = self.time - 1
         self.lcd.display(self.time)
+        self.time = self.time - 1
 
 class Sleep(QWidget):
     def __init__(self):
@@ -98,11 +126,14 @@ class Sleep(QWidget):
         self.msg_lbl.setAlignment(Qt.AlignCenter)
         self.msg_lbl.setStyleSheet('QLabel { background-color : #3c3f41; color: #FFFFFF}')
         alert_lyt.addWidget(self.msg_lbl)
+        img_btn = ImageButton('stop.png', 'play_fill.png', 'test', self)
+        img_btn.setSize(QSize(10, 10))
+        img_btn.connect(self.start)
+        alert_lyt.addWidget(img_btn)
 
         vbox_lyt.addLayout(panel_lyt) #上部数字
         vbox_lyt.addLayout(alert_lyt) #下部提示
         self.setLayout(vbox_lyt)
-
         center(self)
 
         self.setWindowTitle('TIME RUNS FAST!')
