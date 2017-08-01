@@ -5,9 +5,23 @@ import sys
 from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame,QLabel,
                              QHBoxLayout, QPushButton, QApplication, QLCDNumber
                              , QDesktopWidget)
-# from PyQt5.QtGui import QPainter, QFont, QColor, QPen
+from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon
 from PyQt5.QtCore import Qt, QBasicTimer
 from Utils import center
+
+# class ImageButton(QPushButton):
+#     def __init__(self, icon_down, icon_up, text, parent=None):
+#         super().__init__(self, text, parent)
+#         self.isPress = False
+#         self.icon_down = QIcon(icon_down)
+#         self.icon_up = QIcon(icon_up)
+#     def click(self):
+#         if self.isPress:
+#             self.isPress = False
+#             self.setIcon(*self.icon_up)
+#         else:
+#             self.setIcon(*self.icon_down)
+#             self.isPress = True
 
 class Dash(QWidget):
     def __init__(self, time, parent_board):
@@ -15,13 +29,18 @@ class Dash(QWidget):
         self.setFixedHeight(60)
         self.setFixedWidth(100)
         self.lcd = QLCDNumber(self)
+        self.status_btn = QPushButton(QIcon('stop.png'), '', self)
+        # self.status_btn = ImageButton('pause', , 'play_fill.png', self)
         self.timer = QBasicTimer()
         self.time = time
+        self.isPause = False
         self.parentBoard = parent_board
         self.init()
 
     def init(self):
         main_layout = QHBoxLayout(self)
+        self.status_btn.clicked.connect(self.changeStatus)
+        main_layout.addWidget(self.status_btn)
         main_layout.addWidget(self.lcd, Qt.AlignCenter)
         self.timer.start(1000, self)
 
@@ -29,6 +48,18 @@ class Dash(QWidget):
         self.setStyleSheet("QWidget { background-color: #3c3f41 }")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.show()
+
+    def changeStatus(self):
+        if self.isPause:
+            self.timer.start(1000, self)
+            self.isPause = False
+            self.status_btn.setIcon(QIcon('play_fill.png'))
+        else:
+            self.timer.stop()
+            self.isPause = True
+            self.status_btn.setIcon(QIcon('stop.png'))
+
+        # self.status_btn.setIconSize(QSize(48, 48));
 
     def timerEvent(self, e):
         if self.time == 0:
