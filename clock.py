@@ -8,42 +8,26 @@ from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame,QLabel,
 from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon, QImage, QBrush, QCursor
 from PyQt5.QtCore import Qt, QBasicTimer, QSize, QRect, QPoint
 from Utils import center
+from Buttons import ImageButton
 
-class ImageButton(QPushButton):
 
-    def __init__(self, icon_down, icon_up, text, parent=None):
-        super().__init__(text, parent)
-        self.isPress = False
-        self.f = None
-        self.size = self.frameSize()
+style = '''
+QPushButton#num-btn {
+    background-color: #3c3f41;
+    color: #ffffff;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 10px;
+    border-color: beige;
+    font: bold 14px;
+    min-width: 2em;
+    padding: 6px;  
+}
 
-        self.icon_down = QImage(icon_down)
-        self.icon_up = QImage(icon_up)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-        self.clicked.connect(self.changeState)
-
-    def setSize(self, size):
-        self.size = size
-        self.setFixedSize(size)
-
-    def paintEvent(self, QPaintEvent):
-        painter = QPainter(self)
-        qrect = QRect(QPoint(0,0), self.size)
-        painter.fillRect(qrect, QBrush(QColor('#3c3f41')))
-        if self.isPress:
-            # painter.drawText(0, 0, '121')
-            painter.drawImage(qrect, self.icon_up)
-        else:
-            # QPainter.drawText(int, int, str)
-            painter.drawImage(qrect, self.icon_down)
-
-    def connect(self, f):
-        self.f = f
-
-    def changeState(self):
-        self.isPress = not self.isPress
-        if self.f:
-            self.f()
+QPushButton#num-btn::hover {
+    background-color: red;   
+}
+'''
 
 class Dash(QWidget):
     def __init__(self, time, parent_board):
@@ -65,7 +49,6 @@ class Dash(QWidget):
         main_layout = QHBoxLayout(self)
         self.status_btn.connect(self.changeStatus)
 
-
         # self.status_btn.clicked.connect(self.changeStatus)
         main_layout.addWidget(self.status_btn)
         main_layout.addWidget(self.lcd, Qt.AlignCenter)
@@ -85,7 +68,6 @@ class Dash(QWidget):
             self.timer.stop()
             self.isPause = True
             self.status_btn.setIcon(QIcon('stop.png'))
-            # self.status_btn.setIconSize(QSize(24, 24));
 
     def timerEvent(self, e):
         if self.time == 0:
@@ -97,6 +79,7 @@ class Dash(QWidget):
         self.lcd.display(self.time)
         self.time = self.time - 1
 
+
 class Sleep(QWidget):
     def __init__(self):
         super().__init__()
@@ -106,12 +89,13 @@ class Sleep(QWidget):
             '7', '9', '11',
             '13', '15', '30'
         ]
-
         self.positions = [(i, j) for i in range(3) for j in range(3)]
 
         self.msg_lbl = QLabel("好好想想你要做什么事！！")
+        self.subDash = None
+
         self.init()
-        self.subDS = None
+        self.setStyleSheet(style)
 
     def init(self):
         panel_lyt = QGridLayout()
@@ -120,16 +104,13 @@ class Sleep(QWidget):
 
         for position, second in zip(self.positions, self.seconds):
             sec_btn = QPushButton(second, self)
+            sec_btn.setObjectName('num-btn')
             sec_btn.clicked.connect(self.start)
             panel_lyt.addWidget(sec_btn, *position)
 
         self.msg_lbl.setAlignment(Qt.AlignCenter)
         self.msg_lbl.setStyleSheet('QLabel { background-color : #3c3f41; color: #FFFFFF}')
         alert_lyt.addWidget(self.msg_lbl)
-        img_btn = ImageButton('stop.png', 'play_fill.png', 'test', self)
-        img_btn.setSize(QSize(10, 10))
-        img_btn.connect(self.start)
-        alert_lyt.addWidget(img_btn)
 
         vbox_lyt.addLayout(panel_lyt) #上部数字
         vbox_lyt.addLayout(alert_lyt) #下部提示
@@ -143,9 +124,9 @@ class Sleep(QWidget):
     def start(self):
         source = self.sender()
         time = int(source.text()) * 60
-        self.hide()
-        self.subDS = Dash(time, self)
-        self.subDS.show()
+        # self.hide()
+        self.subDash = Dash(time, self)
+        self.subDash.show()
         self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(time))
 
 if __name__ == '__main__':
