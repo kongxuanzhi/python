@@ -11,12 +11,13 @@ class ImageButton(QPushButton):
     def __init__(self, icon_down, icon_up, text, parent=None):
         super().__init__(text, parent)
         self.isPress = False
-        self.f = None
+        self.callback = None
         self.size = self.frameSize()
         self.backColor = QColor('#3c3f41')
 
         self.icon_down = QImage(icon_down)
         self.icon_up = QImage(icon_up)
+
         self.setCursor(QCursor(Qt.PointingHandCursor))
         self.clicked.connect(self.changeState)
 
@@ -34,19 +35,17 @@ class ImageButton(QPushButton):
         painter.fillRect(qRect, QBrush(self.backColor))
 
         if self.isPress:
-            #painter.drawText(0, 0, '121')
-            painter.drawImage(qRect, self.icon_up)
-        else:
-            # QPainter.drawText(int, int, str)
             painter.drawImage(qRect, self.icon_down)
+        else:
+            painter.drawImage(qRect, self.icon_up)
 
-    def connect(self, f):
-        self.f = f
+    def connect(self, callback):
+        self.callback = callback
 
     def changeState(self):
         self.isPress = not self.isPress
-        if self.f:
-            self.f()
+        if self.callback:
+            self.callback()
 
 class TextButton(QPushButton):
     def __init__(self, text, backColor, foreColor, parent=None):
