@@ -3,13 +3,13 @@
 
 import sys
 
+from Buttons import ImageButton
+from Utils import *
 from PyQt5.QtCore import Qt, QBasicTimer, QSize
 from PyQt5.QtGui import QPainter, QIcon, QCursor
-from PyQt5.QtWidgets import (QTextEdit,
+from PyQt5.QtWidgets import (QTextEdit,QLineEdit,
                              QComboBox)
 
-from Utils import *
-from clock.Buttons import ImageButton
 
 style = '''
 QPushButton#count-down-btn {
@@ -30,7 +30,7 @@ QPushButton#count-down-btn::hover {
 
 QPushButton#toggle-btn {
     color: grey;
-    border-image: url(round_right_fill.png) 3 10 3 10;
+    border-image: url(./clock/round_right_fill.png) 3 10 3 10;
     border-top: 3px transparent;
     border-bottom: 3px transparent;
     border-right: 10px transparent;
@@ -48,7 +48,7 @@ class CountDown(QWidget):
         super().__init__()
         self.setFixedSize(100, 60)
         self.lcd = QLCDNumber(self)
-        self.status_btn = ImageButton('stop.png', 'play_fill.png', '', self)
+        self.status_btn = ImageButton('./clock/stop.png', './clock/play_fill.png', '', self)
         self.status_btn.setSize(QSize(25, 25))
 
         self.timer = QBasicTimer()
@@ -115,6 +115,7 @@ class Sleep(QWidget):
         self.positions = [(i, j) for i in range(4) for j in range(3)]
         self.startTime = self.endTime = None
         self.time = 0
+        self.items = []
 
         self.isPress = False
 
@@ -122,6 +123,10 @@ class Sleep(QWidget):
         self.right = QWidget(self)
         self.msg_lbl = QLabel("好好想想你要做什么事！！")
         self.todolist_cbb = QComboBox()
+        self.todolist_tb = QLineEdit()
+
+        self.tdl_file = None
+
         self.subWin = None
 
         self.init()
@@ -141,7 +146,7 @@ class Sleep(QWidget):
         main_panel = QHBoxLayout()
         right_panel = QVBoxLayout()
         left_panel = QVBoxLayout()
-        
+
         # left top
         num_top_panel = QGridLayout()
         for position, second in zip(self.positions, self.seconds):
@@ -160,10 +165,11 @@ class Sleep(QWidget):
         # left bottom
         self.msg_lbl.setAlignment(Qt.AlignCenter)
         self.msg_lbl.setStyleSheet('QLabel { background-color : #3c3f41; color: #FFFFFF}')
-        self.todolist_cbb.addItems(self.getTodDoList())
+        self.loadTodDoList()
 
         msg_bottom_panel = QVBoxLayout()
         msg_bottom_panel.addWidget(self.msg_lbl)
+        msg_bottom_panel.addWidget(self.todolist_tb)
         msg_bottom_panel.addWidget(self.todolist_cbb)
 
         # left
@@ -211,28 +217,47 @@ class Sleep(QWidget):
 
     def start(self):
         source = self.sender()
-        print (self.)
-        # try:
-        #     self.getTodDoList()
-        #     self.time = int(source.text()) * 60
-        #     self.subWin = CountDown(self.time, self)
-        # except ValueError:
-        #     self.subWin = Timing(0, self)
-        # # self.hide()
-        # self.startTime = getCurrentTime()
-        # self.subWin.show()
-        # self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(self.time))
+        try:
+            self.time = int(source.text()) * 60
+            self.subWin = CountDown(self.time, self)
+        except ValueError:
+            self.subWin = Timing(0, self)
 
-    def getTodDoList(self):
-        items = ['323', 'dff']
-        items.append('xxx')
-        return items
+        self.hide()
+        self.saveToDoList(self.todolist_tb.text())
+        self.startTime = getCurrentTime()
+        self.subWin.show()
+        self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(self.time))
+
+
+    #load for first time
+    def loadTodDoList(self):
+        self.tdl_file = open('./clock/todolist.txt', 'r')
+        list = self.tdl_file.readlines()
+        print(list)
+        for line in list:
+            self.todolist_cbb.addItem(line.strip('\n'))
+        self.tdl_file.close()
+
+    def saveToDoList(self, text):
+        # save text to file and add text to list
+        # not in list then add & save, then load
+        if text:
+            self.todolist_cbb.addItem(text)
+            self.tdl_file = open('./clock/todolist.txt', 'a')
+            self.tdl_file.write(text + "\n")
+            self.tdl_file.close()
 
     def log(self, time):
+        currentDoing = self.todolist_cbb.currentText()
+        text = self.todolist_tb.text()
+        if text:
+            currentDoing = text
+
         self.endTime = getCurrentTime()
         strTime = str(time) + "\t total:" + str(self.time) if time == 0 else str(time)
-        fmt = self.startTime + "--->" + self.endTime + "\t" + strTime
-        log_file = open('log.txt', 'a')
+        fmt = currentDoing + ':\t' + self.startTime + "--->" + self.endTime + "\t" + strTime
+        log_file = open('./clock/log.txt', 'a')
         log_file.write(fmt + "\n")
         log_file.close()
 

@@ -5,8 +5,8 @@ import sys
 
 from PyQt5.QtWidgets import *
 
-from Utils import center
 from clock.Buttons import *
+from clock.Utils import center
 
 # image: url(五角星.png);
 style = '''
