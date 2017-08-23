@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon, QImage, QBrush, QCursor, QPalette
-from PyQt5.QtCore import Qt, QBasicTimer, QSize, QRect, QPoint
+
 from Utils import center
-from Buttons import *
+from clock.Buttons import *
 
 # image: url(五角星.png);
 style = '''

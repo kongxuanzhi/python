@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QVBoxLayout, QFrame, QLabel, QTextEdit,
-                             QHBoxLayout, QPushButton, QApplication, QLCDNumber, QDesktopWidget, QComboBox)
-from PyQt5.QtGui import QPainter, QFont, QColor, QPen, QIcon, QImage, QBrush, QCursor
-from PyQt5.QtCore import Qt, QBasicTimer, QSize, QRect, QPoint
+
+from PyQt5.QtCore import Qt, QBasicTimer, QSize
+from PyQt5.QtGui import QPainter, QIcon, QCursor
+from PyQt5.QtWidgets import (QTextEdit,
+                             QComboBox)
+
 from Utils import *
-from Buttons import ImageButton
+from clock.Buttons import ImageButton
 
 style = '''
 QPushButton#count-down-btn {
@@ -158,7 +160,8 @@ class Sleep(QWidget):
         # left bottom
         self.msg_lbl.setAlignment(Qt.AlignCenter)
         self.msg_lbl.setStyleSheet('QLabel { background-color : #3c3f41; color: #FFFFFF}')
-        self.todolist_cbb.addItems(['323', 'dff'])
+        self.todolist_cbb.addItems(self.getTodDoList())
+
         msg_bottom_panel = QVBoxLayout()
         msg_bottom_panel.addWidget(self.msg_lbl)
         msg_bottom_panel.addWidget(self.todolist_cbb)
@@ -206,18 +209,24 @@ class Sleep(QWidget):
         qp.drawPoint(300, 10)
         qp.end()
 
-
     def start(self):
         source = self.sender()
-        try:
-            self.time = int(source.text()) * 60
-            self.subWin = CountDown(self.time, self)
-        except ValueError:
-            self.subWin = Timing(0, self)
-        self.hide()
-        self.startTime = getCurrentTime()
-        self.subWin.show()
-        self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(self.time))
+        print (self.)
+        # try:
+        #     self.getTodDoList()
+        #     self.time = int(source.text()) * 60
+        #     self.subWin = CountDown(self.time, self)
+        # except ValueError:
+        #     self.subWin = Timing(0, self)
+        # # self.hide()
+        # self.startTime = getCurrentTime()
+        # self.subWin.show()
+        # self.msg_lbl.setText('TIME IS OVER!!!! DONE? 笨蛋！ ' + str(self.time))
+
+    def getTodDoList(self):
+        items = ['323', 'dff']
+        items.append('xxx')
+        return items
 
     def log(self, time):
         self.endTime = getCurrentTime()
@@ -238,3 +247,4 @@ if __name__ == '__main__':
 # 3. 自定义时间button  done
 # 4. 选中默认事件，计时
 # 5. 计时
+# 6. 添加tag 如，某个项目， build，等
